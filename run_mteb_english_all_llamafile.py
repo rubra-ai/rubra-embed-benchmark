@@ -2,6 +2,7 @@
 import os
 import subprocess
 import logging
+import time
 from mteb import MTEB
 from rubra_model import RubraModel
 
@@ -26,12 +27,19 @@ TASK_LIST = (
     + TASK_LIST_STS
 )
 
-# Function to run and then stop a model
-def run_and_stop_model(model_file):
+# Function to set executable permissions, run the model, wait, and then stop the model
+def chmod_and_run_model(model_file):
     model_name = model_file.replace(".llamafile", "")
+    # Set the file to be executable
+    os.chmod(model_file, 0o755)  # Sets the file to be executable by the owner
+
     # Start the model file (set up the environment or load the model)
     process = subprocess.Popen(f"./{model_file}", shell=True)
     
+    # Wait for 30 seconds for the model to fully load
+    logger.info(f"Waiting for 30 seconds for the model to load: {model_file}")
+    time.sleep(30)  # Pause execution for 30 seconds
+
     # Initialize your model here
     model = RubraModel()
 
@@ -56,4 +64,4 @@ model_files = [f for f in os.listdir('.') if f.endswith('.llamafile')]
 # Iterate over each model file and run the evaluation
 for model_file in model_files:
     logger.info(f"Evaluating model: {model_file}")
-    run_and_stop_model(model_file)
+    chmod_and_run_model(model_file)
